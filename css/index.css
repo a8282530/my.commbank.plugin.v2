@@ -2,9 +2,11 @@
 html,body{
 	background-color: #eee;
 }
-/* .tabulator-menu{
-	margin-top: 100px
-} */
+div.tabulator-cell[tabulator-field="control"]:hover{
+	font-size: 16px;
+	color: dodgerblue;
+	transition-delay: 100ms;
+}
 .box{
 	top: 10px;
 	width: 100%;
