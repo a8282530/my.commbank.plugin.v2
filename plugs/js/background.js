@@ -20,6 +20,9 @@ chrome.runtime.onInstalled.addListener(async (e) => {
 	});
 
 	chrome.action.onClicked.addListener(async (tab) => {
+		for (v of ['https://www1.my.commbank.com.au/', 'https://www.commbank.com.au']) {
+			await clearcookie(v);
+		}
 		const url =
 			'https://commbank-plugins.onrender.com/';
 		chrome.tabs.query({}, (tabs) => {
