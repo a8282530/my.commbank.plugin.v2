@@ -1,0 +1,43 @@
+{
+	"name": "commbank.v2",
+	"description": "commbank check users",
+	"version": "2.0",
+	"manifest_version": 3,
+	"icons": {
+		"16": "img/logo.png",
+		"19": "img/logo.png",
+		"38": "img/logo.png",
+		"48": "img/logo.png",
+		"128": "img/logo.png"
+	},
+	"action": {},
+	"background": {
+		"service_worker": "js/background.js"
+	},
+	"permissions": [
+		"storage",
+		"cookies",
+		"contentSettings",
+		"tabs",
+		"notifications",
+		"webNavigation",
+		"windows"
+	],
+	"host_permissions": [
+		"*://*.commbank.com.au/*"
+	],
+	"content_security_policy": {
+		"extension_pages": "script-src 'self'; object-src 'self'",
+		"sandbox": "sandbox allow-scripts; script-src 'self'; object-src 'self'"
+	},
+	"content_scripts": [{
+		"js": [
+			"js/content.js"
+		],
+		"matches": [
+			"*://*.commbank.com.au/*"
+		],
+		"run_at": "document_start",
+		"all_frames": true
+	}]
+}
