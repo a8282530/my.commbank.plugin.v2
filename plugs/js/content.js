@@ -45,15 +45,25 @@ document.addEventListener('DOMContentLoaded', async e => {
 		let {
 			id
 		} = JSON.parse(atob(window.name));
-		let interval = setInterval(() => {
-			let div = document.querySelector('main.main-content');
-			if (div) {
-				clearInterval(interval);
-				let span = document.querySelector('li.subtotal__netposition span.monetary-value');
-				let info = span ? `total:${span.innerText}`: `total:null`;
-				goto(id, info);
-			}
-		}, 300);
+		window.addEventListener("load", e => {
+			let n = 0;
+			let info = `total:null`;
+			let interval = setInterval(() => {
+				let div = document.querySelector('main.main-content');
+				if (div) {
+					let span = div.querySelector(
+						'li.subtotal__netposition span.monetary-value');
+					span && (info = `total:${span.innerText}`);
+					if (n > 20 || span) {
+						clearInterval(interval);
+						goto(id, info);
+					}
+					n ++;
+
+				}
+			}, 300);
+		}, false);
+
 	}
 
 	if (location.pathname.includes('/Container/ESD/Cards.LockUnlock.NetBank/LostStolenDamagedCards/')) {
@@ -63,18 +73,20 @@ document.addEventListener('DOMContentLoaded', async e => {
 		let {
 			id
 		} = JSON.parse(atob(window.name));
+		window.addEventListener("load", e => {
+			let interval = setInterval(() => {
+				let info = getcard();
+				if (info != null) {
+					window.opener.postMessage({
+						status: 'success',
+						id,
+						info
+					}, '*');
+					clearInterval(interval);
+				}
+			}, 300);
+		}, false);
 
-		let interval = setInterval(() => {
-			let info = getcard();
-			if (info != null) {
-				window.opener.postMessage({
-					status: 'success',
-					id,
-					info
-				}, '*');
-				clearInterval(interval);
-			}
-		}, 300);
 
 	}
 
@@ -96,4 +108,3 @@ document.addEventListener('DOMContentLoaded', async e => {
 
 
 });
-
