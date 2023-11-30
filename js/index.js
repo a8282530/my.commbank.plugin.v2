@@ -146,7 +146,7 @@ document.addEventListener('DOMContentLoaded', e => {
 			// 	console.log(row.getElement())
 			// },
 			pagination: true, //启用分页
-			paginationSize: 1, // 可选参数，用于请求每页一定数量的行
+			paginationSize: 30, // 可选参数，用于请求每页一定数量的行
 			// paginationInitialPage : 1 , // 可选参数设置要加载的初始页面
 			paginationSizeSelector: [30, 50, 100, true], //选择末尾带有“all”选项的列表列表
 			paginationCounter: "rows", //添加分页行计数器
