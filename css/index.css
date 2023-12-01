@@ -8,51 +8,10 @@ div.tabulator-cell[tabulator-field="control"]:hover{
 	transition-delay: 100ms;
 }
 .box{
-	top: 10px;
-	width: 100%;
-	height: 100%;
-	left: 0;
-	right: 0;
-	margin: 0 auto;
-	position: relative;
 	min-height: 300px;
-}
-.loading{
-	position: fixed;
-	width: 100%;
-	height: 100%;
-	left: 0;
-	right: 0;
-	margin: 0 auto;
-	background-size: 100%;
-	background-color: #eee;
+	margin-top: 5px;
+	margin-bottom: 5px;
+	margin-left: 5px;
+	margin-right: 5px;
 }
 
-.loader {
-  width: 100px;
-  aspect-ratio: 1;
-  border-radius: 50%;
-  background: #000;
-  box-shadow: 0 0 0 0 #0004;
-  animation: l2 1.5s infinite linear;
-  margin: 0 auto;
-  top: calc(20vh - 60px);
-  position: relative;
-}
-.loader:before,
-.loader:after {
-  content: "";
-  color: brown;
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  box-shadow: 0 0 0 0 #0004;
-  animation: inherit;
-  animation-delay: -0.5s;
-}
-.loader:after {
-  animation-delay: -1s;
-}
-@keyframes l2 {
-    100% {box-shadow: 0 0 0 40px #0000}
-}
