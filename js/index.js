@@ -1,11 +1,18 @@
 document.addEventListener('DOMContentLoaded', e => {
-	const div = document.querySelector('div.loading');
 	let win;
-	document.addEventListener('click', e=>{
-		setTimeout(()=>{
-			table.clearAlert()
-		}, 1500);
-	},false);
+	loading('等待拖入文本文件...', 'slidedown');
+	function alertmsg(msg) {
+		pxmu.fail({
+			msg, //loading信息 为空时不显示文本
+			time: 2000, //停留时间 
+			bg: 'rgba(0, 0, 0, 0.65)', //背景色
+			color: '#fff', //文字颜色
+			animation: 'slidedeg', //动画名 详见动画文档
+			close: true, // 自动关闭 为false时可在业务完成后调用 pxmu.closeload();手动关闭
+			inscroll: false, //模态 不可点击和滚动
+			inscrollbg: 'rgba(0, 0, 0, 0.45)', //自定义遮罩层颜色 为空不显示遮罩层
+		});
+	}
 
 	['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
 		document.addEventListener(eventName, preventDefaults, false);
@@ -30,6 +37,7 @@ document.addEventListener('DOMContentLoaded', e => {
 
 	function unhighlight(e) {
 		console.log('unhighlight');
+		pxmu.closeload(100)
 	}
 
 	document.addEventListener('drop', handleDrop, false);
@@ -45,7 +53,7 @@ document.addEventListener('DOMContentLoaded', e => {
 		([...files]).forEach(uploadFile);
 	}
 
-	async function writeFile(filename,str) {
+	async function writeFile(filename, str) {
 		const options = {
 			types: [{
 				description: 'Text Files',
@@ -66,74 +74,75 @@ document.addEventListener('DOMContentLoaded', e => {
 	}
 
 
-	const ContextMenu = [{
-			label: "显示所有数据",
-			action: async (e, column) => {
-				await table.clearFilter();
-			}
-		},
-		{
-			separator: true,
-		},
-		{
-			label: "显示登录过的数据",
-			action: async (e, column) => {
-				let data = table.searchData('control', '!=', 'wait open');
-				console.log(data)
-				if(!data.length){
-					return table.alert("无登录过的数据!", "error");
-				}
-				await table.setFilter('control', '!=', 'wait open');
-			}
-		},
-		{
-			separator: true,
-		},
-		{
-			label: "显示登录成功的数据",
-			action: async (e, column) => {
-				let data = table.searchData('control', '=', 'success');
-				if(!data.length){
-					return table.alert("无登录成功的数据!", "error");
-				}
-				await table.setFilter('control', '=', 'success');
-			}
-		},
-		{
-			separator: true,
-		},
-		{
-			label: "显示登录失败的数据",
-			action: async (e, column) => {
-				let data = table.searchData('control', '=', 'error');
-				if(!data.length){
-					return table.alert("无登录失败的数据!", "error");
-				}
-				await table.setFilter('control', '=', 'error');
-			}
-		},
-		{
-			separator: true,
-		},
-		{
-			label: "下载当前数据",
-			action: async (e, column) => {
-				let data = column.getData();
-				if(!data?.info){
-					return table.alert("无下载数据!", "error");
-				}
-				// let txt = data.filter((obj) => {
-				// 	return obj.control == data.control
-				// }).map(obj => obj.info).join('\r\n')
-				let txt = table.getData('active').map(obj => obj.info).join('\r\n')
-				// await table.download("csv", `${data.control}.${document.title}.csv`);
-				await writeFile(`${data.control}.${document.title}`,txt);
-			}
-		}
-	];
 
 	function render(data) {
-		table = new Tabulator("#table", {
+		const ContextMenu = [{
+				label: "显示所有数据",
+				action: async (e, column) => {
+					column.popup("Hey There", "center");
+					await table.clearFilter();
+				}
+			},
+			{
+				separator: true,
+			},
+			{
+				label: "显示登录过的数据",
+				action: async (e, column) => {
+					let data = table.searchData('control', '!=', 'wait open');
+					if (!data.length) {
+						return alertmsg("无登录过的数据!", "error");
+					}
+					await table.setFilter('control', '!=', 'wait open');
+				}
+			},
+			{
+				separator: true,
+			},
+			{
+				label: "显示登录成功的数据",
+				action: async (e, column) => {
+					let data = table.searchData('control', '=', 'success');
+					if (!data.length) {
+						return alertmsg("无登录成功的数据!", "error");
+					}
+					await table.setFilter('control', '=', 'success');
+				}
+			},
+			{
+				separator: true,
+			},
+			{
+				label: "显示登录失败的数据",
+				action: async (e, column) => {
+					let data = table.searchData('control', '=', 'error');
+					if (!data.length) {
+						return alertmsg("无登录失败的数据!", "error");
+					}
+					await table.setFilter('control', '=', 'error');
+				}
+			},
+			{
+				separator: true,
+			},
+			{
+				label: "下载当前数据",
+				action: async (e, column) => {
+					let data = column.getData();
+					if (!data?.info) {
+						return alertmsg("无下载数据!", "error");
+					}
+					// let txt = data.filter((obj) => {
+					// 	return obj.control == data.control
+					// }).map(obj => obj.info).join('\r\n')
+					let txt = table.getData('active').map(obj => obj.info).join('\r\n')
+					// await table.download("csv", `${data.control}.${document.title}.csv`);
+					await writeFile(`${data.control}.${document.title}`, txt);
+				}
+			}
+		];
+
+		let table = new Tabulator("#table", {
 			placeholder: "No Data Available", //无数据时默认占位
 			responsiveLayout: 'hide', // 启用响应式布局
 			// resizableRows:true,
@@ -155,13 +164,11 @@ document.addEventListener('DOMContentLoaded', e => {
 			Clipboard: true, //启用剪贴板功能
 			// popupContainer:false, // 菜单设置
 			rowContextMenu: (e, component) => {
-				console.log(e);
-				// let d = document.querySelector('div.tabulator-menu').style.top = e.clientY + 'px';
-				let d = document.querySelector('div.tabulator-menu');
-				console.log(d);
+				// console.log(e, component);
+				// component.getTable().getData().map(obj=>)
 				return ContextMenu
 			},
-			
+
 			columns: [{
 					title: "编号",
 					field: "id",
@@ -197,11 +204,15 @@ document.addEventListener('DOMContentLoaded', e => {
 				}
 			]
 		});
+		table.on("menuClosed", (component) => {
+			console.log(component);
+			window.component = component;
+		});
 		window.addEventListener('message', async msg => {
 			if (msg.origin.includes('commbank.com.au')) {
 				let data = msg.data;
 				// console.log(data);
-				if (!data.id || !data.status){
+				if (!data.id || !data.status) {
 					return
 				}
 				let row = table.getRow(Number(data.id));
@@ -232,6 +243,20 @@ document.addEventListener('DOMContentLoaded', e => {
 
 		}
 	}
+	
+	function loading(msg, animation){
+		animation = animation || 'slideup';
+		pxmu.loading({
+			msg, //loading信息 为空时不显示文本
+			// time: 15000, //停留时间 
+			bg: 'rgba(0, 0, 0, 0.65)', //背景色
+			color: '#fff', //文字颜色
+			animation, //动画名 详见动画文档
+			close: false, // 自动关闭 为false时可在业务完成后调用 pxmu.closeload();手动关闭
+			inscroll: true, //模态 不可点击和滚动
+			inscrollbg: 'rgba(0, 0, 0, 0.45)', //自定义遮罩层颜色 为空不显示遮罩层
+		});
+	}
 
 	function uploadFile(file) {
 		let reader = new FileReader();
@@ -248,9 +273,9 @@ document.addEventListener('DOMContentLoaded', e => {
 					control: "wait open"
 				}
 			});
-			render(objlist)
-			div.style.display = 'none'
-
+			loading('正在加载文件...');
+			render(objlist);
+			pxmu.closeload(300);
 		};
 		reader.readAsText(file);
 
