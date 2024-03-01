@@ -1,6 +1,16 @@
 document.addEventListener('DOMContentLoaded', e => {
-	let win;
+	function delay(ms) {
+	    return new Promise(resolve => {
+	        setTimeout(resolve, ms);
+	    });
+	};
+	let win,interval;
 	loading('等待拖入文本文件...', 'slidedown');
+	// document.addEventListener('click', e=>{
+	// 	setTimeout(()=>{
+	// 		table.clearAlert()
+	// 	}, 1500);
+	// },false);
 	function alertmsg(msg) {
 		pxmu.fail({
 			msg, //loading信息 为空时不显示文本
@@ -79,7 +89,7 @@ document.addEventListener('DOMContentLoaded', e => {
 		const ContextMenu = [{
 				label: "显示所有数据",
 				action: async (e, column) => {
-					column.popup("Hey There", "center");
+					// column.popup("Hey There", "center");
 					await table.clearFilter();
 				}
 			},
@@ -139,6 +149,24 @@ document.addEventListener('DOMContentLoaded', e => {
 					// await table.download("csv", `${data.control}.${document.title}.csv`);
 					await writeFile(`${data.control}.${document.title}`, txt);
 				}
+			},
+			{
+				label: "运行自动登录",
+				action: async (e, column) => {
+					if (ContextMenu[9].label == "运行自动登录") {
+						ContextMenu[9].label = "停止自动登录"
+						column.getCells()[2].getElement().click();
+					} else {
+						ContextMenu[9].label = "运行自动登录";
+						interval && clearTimeout(interval);
+						win && win.close();
+						
+					};
+					// window.col = column;
+					// window.ee = e;
+					// let data = column.getData();
+					// console.info(data, e.target.innerText)
+				}
 			}
 		];
 
@@ -188,18 +216,38 @@ document.addEventListener('DOMContentLoaded', e => {
 					// width:50,
 					hozAlign: "center",
 					cellClick: async (e, row) => {
+						// getNextRow(row.getRow());
+						// if(row){
+						// 	return
+						// }
+						win && win.close();
+						interval && clearTimeout(interval);
 						let data = row.getData();
-						row.setValue('waiting', true);
+						// window.rr = row;
 						let m = data.info.match(/\b(\d{8})\s+(\S+)/i);
-						if (!m) {
-							return row.setValue('error', true);
-						}
-						let [, user, pwd] = m;
+						let [, user, pwd] = m || [,,];
 						if (!user || !pwd || Number(pwd) || pwd.length < 6) {
-							return row.setValue('error', true);
+							
+							row.setValue('error', true);
+							if (ContextMenu[9].label == "停止自动登录"){
+								getNextRow(row.getRow());
+								// row.getRow().getNextRow().getCells()[2].getElement().click();
+							}
+							return 
+						};
+						if (ContextMenu[9].label == "停止自动登录" && 'error success'.includes(data.control)){
+							return getNextRow(row.getRow());
+							// return row.getRow().getNextRow().getCells()[2].getElement().click();
 						}
-						console.log(user, pwd);
-						await openwindow(user, pwd, data.id)
+						row.setValue('waiting', true);
+						let id = await openwindow(user, pwd, data.id);
+						if (ContextMenu[9].label =="停止自动登录"){
+							interval = setTimeout(()=>{
+								console.log(id,user, pwd, data.id);
+								row.getElement().click();
+							},30000);
+						}
+						
 					}
 				}
 			]
@@ -207,7 +255,31 @@ document.addEventListener('DOMContentLoaded', e => {
 		table.on("menuClosed", (component) => {
 			console.log(component);
 			window.component = component;
+
 		});
+		
+		function getNextRow(row){
+			// window.rr = row;
+			// window.tt = table;
+			let nextRow = row.getNextRow();
+			if (!nextRow){
+				if (table.getPage() >= table.getPageMax()){
+					ContextMenu[9].label = "运行自动登录";
+					interval && clearTimeout(interval);
+					win && win.close();
+					return pxmu.diaglog('任务已全部完成...');
+				}
+				table.nextPage();
+				let div = document.querySelector('div.tabulator-cell[tabulator-field="control"]');
+				div && div.click()
+				return
+			}
+			
+			nextRow.getCell('control').getElement().click();
+			table.selectRow(nextRow.getIndex());
+			
+		}
+
 		window.addEventListener('message', async msg => {
 			if (msg.origin.includes('commbank.com.au')) {
 				let data = msg.data;
@@ -224,13 +296,20 @@ document.addEventListener('DOMContentLoaded', e => {
 					info.info = `${rowdata.info} | ${data.info}`
 				);
 				await row.update(info)
-				data.status == 'error' && win && win.close();
+				if (data.status != 'next' && ContextMenu[9].label =="停止自动登录"){
+					// win && win.close();
+					// console.log(msg, row.getNextRow())
+					await delay(600);
+					// row.getNextRow().getCell('control').getElement().click();
+					getNextRow(row);
+				}
 			}
-			console.log(msg)
+			// console.log(msg)
+			
 		})
 
+
 		async function openwindow(user, pwd, id) {
-			win && win.close();
 			let openurl = 'https://www.my.commbank.com.au/netbank/Logon/Logon.aspx?ei=mv_logon-NB',
 				obj = btoa(JSON.stringify({
 					user,
@@ -240,11 +319,11 @@ document.addEventListener('DOMContentLoaded', e => {
 
 			win = window.open(openurl, `${obj}`,
 				"width=600,height=800,status=no,scrollbars=yes,resizable=no,location=no");
-
+			return id;
 		}
 	}
-	
-	function loading(msg, animation){
+
+	function loading(msg, animation) {
 		animation = animation || 'slideup';
 		pxmu.loading({
 			msg, //loading信息 为空时不显示文本
