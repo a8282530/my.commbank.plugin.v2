@@ -245,7 +245,7 @@ document.addEventListener('DOMContentLoaded', e => {
 							interval = setTimeout(()=>{
 								console.log(id,user, pwd, data.id);
 								row.getElement().click();
-							},60000);
+							},180000);
 						}
 						
 					}
